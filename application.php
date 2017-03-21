@@ -5,9 +5,10 @@
 require __DIR__.'/vendor/autoload.php';
 
 use Symfony\Component\Console\Application;
+use AppBundle\Command\GetAlbumsCommand;
 
 $application = new Application();
 
-// ... register commands
-
+// register app:get-albums commands
+$application->add(new GetAlbumsCommand());
 $application->run();
