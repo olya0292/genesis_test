@@ -59,6 +59,6 @@ class GetAlbumsCommand extends ContainerAwareCommand
             $src_type = 'file';
         }
         $msg = array('id' => $id, 'src_type' => $src_type);
-        $this->getContainer()->get('producer_service')->publish(json_encode($msg));
+        $this->getContainer()->get('producer_service')->process($msg);
     }
 }
