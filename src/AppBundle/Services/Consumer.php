@@ -1,6 +1,7 @@
 <?php
 namespace AppBundle\Services;
 
+use Behat\Mink\Exception\Exception;
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqplib\Message\AMQPMessage;
 use Doctrine\ORM\EntityManager;
@@ -23,6 +24,12 @@ class Consumer implements ConsumerInterface
     private $api;
 
     /**
+     * Logger instance
+     * @var
+     */
+    private $logger;
+
+    /**
      * Doctrine Entity Manager
      *
      * @var EntityManager
@@ -35,10 +42,11 @@ class Consumer implements ConsumerInterface
      * @param $api
      * @param $em
      */
-    public function __construct($api, EntityManager $em){
+    public function __construct($api, EntityManager $em, $logger){
 
         $this->api = $api;
         $this->em = $em;
+        $this->logger = $logger;
     }
 
     /**
@@ -66,10 +74,14 @@ class Consumer implements ConsumerInterface
                 if(empty($user)){
                     $this->_save_user($vk_user);
                     $this->em->flush();
+                } else {
+                    throw new \Exception('User already exists!');
                 }
+            } else {
+                throw new \Exception('User does not has any photos or inactive!');
             }
         } catch (\Exception $exception){
-            var_dump($exception->getMessage());
+            $this->logger->error(sprintf('Error: "%s"', $exception->getMessage()));
         }
 
     }
