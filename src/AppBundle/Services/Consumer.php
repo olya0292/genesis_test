@@ -3,6 +3,10 @@ namespace AppBundle\Services;
 
 use OldSound\RabbitMqBundle\RabbitMq\ConsumerInterface;
 use PhpAmqplib\Message\AMQPMessage;
+use Doctrine\ORM\EntityManager;
+use AppBundle\Entity\User;
+use AppBundle\Entity\Album;
+use AppBundle\Entity\Photo;
 
 /**
  * Class Consumer
@@ -12,11 +16,6 @@ use PhpAmqplib\Message\AMQPMessage;
 class Consumer implements ConsumerInterface
 {
     /**
-     * Define how many photos are returned. Default 20, max 200.
-     */
-    const API_COUNT = 200;
-
-    /**
      * VK API instance
      *
      * @var
@@ -24,13 +23,22 @@ class Consumer implements ConsumerInterface
     private $api;
 
     /**
+     * Doctrine Entity Manager
+     *
+     * @var EntityManager
+     */
+    private $em;
+
+    /**
      * Consumer constructor.
      *
      * @param $api
+     * @param $em
      */
-    public function __construct($api){
+    public function __construct($api, EntityManager $em){
 
         $this->api = $api;
+        $this->em = $em;
     }
 
     /**
@@ -44,11 +52,21 @@ class Consumer implements ConsumerInterface
             // Get message from queue
             $body = json_decode(unserialize($message->body));
 
-            // Make request to check how many albums user has
-            $res = $this->api->call('photos.getAlbumsCount', ['user_id' => $body->id]);
-            // If more than 0, then get user's photos
-            if($res['response'] > 0){
-                $this->_get_photos(0, $body->id);
+            // Make request to check user status and how many albums, photos user has
+            $request = $this->api->call('users.get', ['user_ids' => $body->id, 'fields' => 'counters']);
+            $vk_user = $request['response'][0];
+
+            // If user active and has more than 0 photos and more then 0 albums
+            if(!empty($vk_user['counters']) && ($vk_user['counters']['photos'] > 0 || $vk_user['counters']['albums'] > 0)){
+
+                // Check if user already exist
+                $user = $this->em->getRepository('AppBundle:User')->findOneByVkId($body->id);
+
+                // If not, save user to DB
+                if(empty($user)){
+                    $this->_save_user($vk_user);
+                    $this->em->flush();
+                }
             }
         } catch (\Exception $exception){
             var_dump($exception->getMessage());
@@ -57,24 +75,63 @@ class Consumer implements ConsumerInterface
     }
 
     /**
-     * Get photos from API, save them to DB.
+     * Save user to DB
      *
-     * @param $receive
-     * @param $id
+     * @param $vk_user
      */
-    protected function _get_photos($receive, $id){
-        // Get photos from DB
-        $res = $this->api->call('photos.getAll', ['owner_id' => $id, 'photo_sizes' => 1, 'offset' => $receive, 'count' => self::API_COUNT]);
-        $count = $res['response']['count'];
+    private function _save_user($vk_user){
+        $user = new User();
+        $user->setVkId($vk_user['id']);
+        $user->setName($vk_user['first_name']);
+        $user->setLastName($vk_user['last_name']);
+        $this->em->persist($user);
+        $this->_save_albums($vk_user['id'], $user);
+
+    }
+
+    /**
+     * Save user's albums to DB
+     *
+     * @param $vk_id
+     * @param $user
+     */
+    private function _save_albums($vk_id, $user){
+        // Get user's albums
+        $user_albums = $this->api->call('photos.getAlbums', ['owner_id' => $vk_id, 'need_system' => 1]);
 
         // Save to DB
-        foreach ($res['response']['items'] as $item){
-//          //TODO save to DB
+        foreach ($user_albums['response']['items'] as $user_album){
+            $album = new Album();
+            $album->setTitle($user_album['title']);
+            $album->setUser($user);
+            $album->setVkAlbumId($user_album['id']);
+            $this->em->persist($album);
+
+            // Get album's photos
+            $this->_save_photos($vk_id, $user, $album);
         }
-        // Check if user has more photos
-        if($count > $receive){
-            $receive += self::API_COUNT;
-            $this->_get_photos($receive, $id);
+    }
+
+    /**
+     * Save album's photo to DB
+     *
+     * @param $vk_id
+     * @param $user
+     * @param $album
+     */
+    private function _save_photos($vk_id, $user, $album){
+
+        // Get photos from API
+        $album_photos = $this->api->call('photos.get', ['owner_id' => $vk_id, 'album_id' => $album->getVkAlbumId(), 'photo_sizes' => 1]);
+
+        // Save to photo to DB
+        foreach ($album_photos['response']['items'] as $album_photo){
+            $photo = new Photo();
+            $photo->setUserId($user->getId());
+            $photo->setAlbum($album);
+            $photo->setSrc($album_photo['sizes'][0]['src']);
+            $photo->setVkAlbumId($album_photo['album_id']);
+            $this->em->persist($photo);
         }
     }
 }
