@@ -3,10 +3,11 @@
 namespace AppBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Doctrine\Common\Collections\ArrayCollection;
 
 /**
  * @ORM\Entity
- * @ORM\Table(name="user")
+ * @ORM\Table(name="users")
  */
 class User
 {
@@ -30,7 +31,17 @@ class User
     /**
      * @ORM\Column(type="string", length=50)
      */
-    private $vk_id;
+    private $vkId;
+
+    /**
+     * @ORM\OneToMany(targetEntity="Album", mappedBy="user")
+     */
+    private $albums;
+
+    public function __construct()
+    {
+        $this->albums = new ArrayCollection();
+    }
 
     /**
      * Get id
@@ -75,7 +86,7 @@ class User
      */
     public function setVkId($vkId)
     {
-        $this->vk_id = $vkId;
+        $this->vkId = $vkId;
 
         return $this;
     }
@@ -87,7 +98,7 @@ class User
      */
     public function getVkId()
     {
-        return $this->vk_id;
+        return $this->vkId;
     }
 
     /**
@@ -112,5 +123,39 @@ class User
     public function getLastName()
     {
         return $this->last_name;
+    }
+
+    /**
+     * Add album
+     *
+     * @param \AppBundle\Entity\Album $album
+     *
+     * @return User
+     */
+    public function addAlbum(\AppBundle\Entity\Album $album)
+    {
+        $this->albums[] = $album;
+
+        return $this;
+    }
+
+    /**
+     * Remove album
+     *
+     * @param \AppBundle\Entity\Album $album
+     */
+    public function removeAlbum(\AppBundle\Entity\Album $album)
+    {
+        $this->albums->removeElement($album);
+    }
+
+    /**
+     * Get albums
+     *
+     * @return \Doctrine\Common\Collections\Collection
+     */
+    public function getAlbums()
+    {
+        return $this->albums;
     }
 }
