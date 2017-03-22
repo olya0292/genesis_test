@@ -5,6 +5,7 @@ use Symfony\Bundle\FrameworkBundle\Command\ContainerAwareCommand;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Helper\Table;
+use Symfony\Component\Console\Helper\TableSeparator;
 
 class ListUserCommand extends ContainerAwareCommand
 {
@@ -36,12 +37,23 @@ class ListUserCommand extends ContainerAwareCommand
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $table = new Table($output);
-        $table
-            ->setHeaders(array('User', 'Album', 'Photos'))
-            ->setRows(array(
-                //TODO get data from DB
-            ))
-        ;
+        $users = $this->getContainer()->get('user_controller')->index();
+        $table->setHeaders(array('VK ID', 'User', 'Albums', 'Photo'));
+        $rows_array = array();
+        // Get users
+        foreach ($users as $user){
+            // Get albums
+            $albums = $user->getAlbums();
+            foreach ($albums as $album){
+                // Get photos
+                $photos = $album->getPhotos();
+                foreach ($photos as $photo){
+                    // Set table row
+                    $rows_array[] = array($user->getVkId(), $user->getName() . ' ' . $user->getLastName(), $album->getTitle(), $photo->getSrc());
+                }
+            }
+        }
+        $table->setRows($rows_array);
         $table->render();
     }
 }
