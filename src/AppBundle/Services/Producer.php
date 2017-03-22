@@ -16,14 +16,22 @@ class Producer
      * @var
      */
     private $producer;
+
+    /**
+     * Logger instance
+     * @var
+     */
+    private $logger;
     /**
      * Producer constructor.
      *
      * @param $producer
+     * @param $logger
      */
-    public function __construct($producer){
+    public function __construct($producer, $logger){
 
         $this->producer = $producer;
+        $this->logger = $logger;
     }
 
     /**
@@ -47,10 +55,7 @@ class Producer
                 $this->producer->publish(serialize(json_encode(array('id' => $message['id']))));
             }
         } catch (\Exception $exception){
-            var_dump($exception->getMessage());
+            $this->logger->error(sprintf('Error: "%s"', $exception->getMessage()));
         }
-
-
-
     }
 }
