@@ -1,6 +1,10 @@
 <?php
 namespace AppBundle\Services;
 
+use Symfony\Component\Serializer\Serializer;
+use Symfony\Component\Serializer\Encoder\CsvEncoder;
+use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
+
 /**
  * Class Producer
  * @package AppBundle\Services
@@ -12,7 +16,6 @@ class Producer
      * @var
      */
     private $producer;
-
     /**
      * Producer constructor.
      *
@@ -30,8 +33,13 @@ class Producer
      */
     public function process($message){
 
+        // Parse csv file
         if($message['src_type'] === 'file'){
-            //TODO parse CSV file
+            $serializer = new Serializer([new ObjectNormalizer()], [new CsvEncoder()]);
+            $data = $serializer->decode(file_get_contents('file.csv'), 'csv');
+            foreach ($data as $item){
+                $this->producer->publish(serialize(json_encode(array('id' => $item['id']))));
+            }
         }
 
         if($message['src_type'] === 'id'){
