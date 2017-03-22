@@ -9,7 +9,7 @@ services:
 #        arguments: ["@another_service_name", "plain_value", "%parameter_name%"]
     producer_service:
         class: AppBundle\Services\Producer
-        arguments: ["@old_sound_rabbit_mq.api_call_producer"]
+        arguments: ["@old_sound_rabbit_mq.api_call_producer", "@logger"]
     consummer_call:
         class: AppBundle\Services\Consumer
         arguments: ["@mrsuh_vk_api", "@doctrine.orm.default_entity_manager"]
