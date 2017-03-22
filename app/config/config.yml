@@ -42,7 +42,7 @@ twig:
 # Doctrine Configuration
 doctrine:
     dbal:
-        driver:   pdo_mysql
+        driver:   pdo_pgsql
         host:     "%database_host%"
         port:     "%database_port%"
         dbname:   "%database_name%"
@@ -60,7 +60,11 @@ doctrine:
         auto_generate_proxy_classes: "%kernel.debug%"
         naming_strategy: doctrine.orm.naming_strategy.underscore
         auto_mapping: true
-
+doctrine_migrations:
+    dir_name: "%kernel.root_dir%/DoctrineMigrations"
+    namespace: Application\Migrations
+    table_name: migration_versions
+    name: Application Migrations
 # Swiftmailer Configuration
 swiftmailer:
     transport: "%mailer_transport%"
@@ -89,3 +93,9 @@ old_sound_rabbit_mq:
             exchange_options: {name: 'api_call', type: direct}
             queue_options:    {name: 'api_call'}
             callback:         consummer_call
+mrsuh_vk_api:
+    app_id: '5939090' # application id
+    username: '' # username
+    password: '' # password
+    scope: ['photos'] # list of permissions
+    version: '5.63' # api version

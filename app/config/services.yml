@@ -12,3 +12,4 @@ services:
         arguments: ["@old_sound_rabbit_mq.api_call_producer"]
     consummer_call:
         class: AppBundle\Services\Consumer
+        arguments: ["@mrsuh_vk_api", "@doctrine.orm.default_entity_manager"]
