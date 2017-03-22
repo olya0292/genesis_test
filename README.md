@@ -3,7 +3,7 @@ Console Symfony 3 application
 
 #### Install
 
-1. Make Composer install the project's dependencies into vendor/ with command `composer install`
+1. Make Composer install the project's dependencies into vendor/ with command `composer install`. Enter your parameters to PostgresSQL DB and others.
 2. Create DB with command `php bin/console doctrine:database:create`
 3. Make migrations `php bin/console doctrine:migrations:migrate`
 
