@@ -32,7 +32,8 @@
         "symfony/console": "^3.2",
         "php-amqplib/rabbitmq-bundle": "^1.12",
         "mrsuh/vk-api": "1.*",
-        "doctrine/doctrine-migrations-bundle": "^1.0"
+        "doctrine/doctrine-migrations-bundle": "^1.0",
+        "symfony/serializer": "^3.2"
     },
     "require-dev": {
         "sensio/generator-bundle": "^3.0",
