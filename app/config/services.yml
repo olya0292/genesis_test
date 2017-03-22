@@ -13,3 +13,6 @@ services:
     consummer_call:
         class: AppBundle\Services\Consumer
         arguments: ["@mrsuh_vk_api", "@doctrine.orm.default_entity_manager"]
+    user_controller:
+        class: AppBundle\Controller\UserController
+        arguments: ["@doctrine.orm.default_entity_manager"]
