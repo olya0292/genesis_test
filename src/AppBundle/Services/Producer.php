@@ -32,20 +32,25 @@ class Producer
      * @param $message
      */
     public function process($message){
-
-        // Parse csv file
-        if($message['src_type'] === 'file'){
-            $serializer = new Serializer([new ObjectNormalizer()], [new CsvEncoder()]);
-            $data = $serializer->decode(file_get_contents('file.csv'), 'csv');
-            foreach ($data as $item){
-                $this->producer->publish(serialize(json_encode(array('id' => $item['id']))));
+        try{
+            // Parse csv file
+            if($message['src_type'] === 'file'){
+                $serializer = new Serializer([new ObjectNormalizer()], [new CsvEncoder()]);
+                $data = $serializer->decode(file_get_contents($message['id']), 'csv');
+                foreach ($data as $item){
+                    $this->producer->publish(serialize(json_encode(array('id' => $item['id']))));
+                }
             }
+
+            if($message['src_type'] === 'id'){
+                //Rabbit MQ want the message to be serialized
+                $this->producer->publish(serialize(json_encode(array('id' => $message['id']))));
+            }
+        } catch (\Exception $exception){
+            var_dump($exception->getMessage());
         }
 
-        if($message['src_type'] === 'id'){
-            //Rabbit MQ want the message to be serialized
-            $this->producer->publish(serialize(json_encode(array('id' => $message['id']))));
-        }
+
 
     }
 }
