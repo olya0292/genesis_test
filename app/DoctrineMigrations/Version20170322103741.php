@@ -18,7 +18,7 @@ class Version20170322103741 extends AbstractMigration
         // this up() migration is auto-generated, please modify it to your needs
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
 
-        $this->addSql('ALTER TABLE "user" ADD last_name VARCHAR(100) NOT NULL');
+        $this->addSql('ALTER TABLE "users" ADD last_name VARCHAR(100) NOT NULL');
     }
 
     /**
@@ -30,6 +30,6 @@ class Version20170322103741 extends AbstractMigration
         $this->abortIf($this->connection->getDatabasePlatform()->getName() !== 'postgresql', 'Migration can only be executed safely on \'postgresql\'.');
 
         $this->addSql('CREATE SCHEMA public');
-        $this->addSql('ALTER TABLE "user" DROP last_name');
+        $this->addSql('ALTER TABLE "users" DROP last_name');
     }
 }
