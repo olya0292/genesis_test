@@ -14,3 +14,5 @@ To run command, that show info about users, albums and photos you need `bin/cons
 Command `bin/console app:get-albums [id]` will get info about one user. If you need get IDs from local file specify option `--src` with value `file`
 
 `bin/console app:get-albums [file_path] --src=file`
+
+[Example of CSV file](../blob/master/file.csv "CSV Example")
